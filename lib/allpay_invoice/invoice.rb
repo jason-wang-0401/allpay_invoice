@@ -10,7 +10,7 @@ module AllpayInvoice
     PRE_ENCODE_COLUMN = [:CustomerName, :CustomerAddr , :CustomerEmail, :ItemName, :ItemWord, :InvoiceRemark, :InvCreateDate, :NotifyMail, :Reason, :IIS_Customer_Name, :IIS_Customer_Addr]
     BLACK_LIST_COLUMN = [:ItemName, :ItemWord, :InvoiceRemark, :Reason]
     PRODUCTION_API_HOST = 'https://einvoice.allpay.com.tw'.freeze
-    TEST_API_HOST = 'http://einvoice-stage.allpay.com.tw'.freeze
+    TEST_API_HOST = 'https://einvoice-stage.allpay.com.tw'.freeze
     TEST_OPTIONS = {
       merchant_id: '2000132',
       hash_key: 'ejCk326UnaZWKisg',
@@ -55,7 +55,7 @@ module AllpayInvoice
 
     def generate_params(overwrite_params = {})
       result = overwrite_params
-      result[:TimeStamp] = Time.now.to_i
+      result[:TimeStamp] = Time.zone.now.to_i
       result[:MerchantID] = @options[:merchant_id]
       result[:CheckMacValue] = make_mac(result)
       result
