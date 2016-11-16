@@ -8,7 +8,7 @@ require 'allpay_invoice/core_ext/hash'
 module AllpayInvoice
   class Invoice
     PRE_ENCODE_COLUMN = [:CustomerName, :CustomerAddr , :CustomerEmail, :ItemName, :ItemWord, :InvoiceRemark, :InvCreateDate, :NotifyMail, :Reason, :IIS_Customer_Name, :IIS_Customer_Addr]
-    BLACK_LIST_COLUMN = [:ItemName, :ItemWord, :InvoiceRemark, :Reason]
+    BLACK_LIST_COLUMN = ['ItemName', 'ItemWord', 'InvoiceRemark', 'ItemRemark', 'Reason']
     PRODUCTION_API_HOST = 'https://einvoice.allpay.com.tw'.freeze
     TEST_API_HOST = 'https://einvoice-stage.allpay.com.tw'.freeze
     TEST_OPTIONS = {
@@ -43,13 +43,27 @@ module AllpayInvoice
       sort_hash = pre_encode(params.clone).sort_by { |x| x.to_s.downcase }
       raw = sort_hash.map! { |k, v| "#{k}=#{v}" }.join('&')
       str = "HashKey=#{@options[:hash_key]}&#{raw}&HashIV=#{@options[:hash_iv]}"
-      url_encoded = CGI.escape(str).downcase!
+      url_encoded = url_encode(str).downcase!
       Digest::MD5.hexdigest(url_encoded).upcase!
+    end
+
+    # base from CGI::escape
+    # replace (,),!,*,.,-,_
+    def url_encode(text)
+      text = text.dup
+      text.gsub!(/([^ a-zA-Z0-9\(\)\!\*_.-]+)/) do
+        '%' + $1.unpack('H2' * $1.bytesize).join('%')
+      end
+      text.tr!(' ', '+')
+      text
     end
 
     def verify_mac(params = {})
       stringified_keys = params.stringify_keys
       check_mac_value = stringified_keys.delete('CheckMacValue')
+      p "傳來的params #{stringified_keys}"
+      p "傳來的mac #{check_mac_value}"
+      p "驗證的mac(MD5) #{make_mac(stringified_keys)}"
       make_mac(stringified_keys) == check_mac_value
     end
 
@@ -154,8 +168,9 @@ module AllpayInvoice
 
     def pre_encode(params)
       PRE_ENCODE_COLUMN.each do |key|
-        params[key] = CGI.escape(params[key]) if params.key?(key)
+        params[key] = url_encode(params[key]) if params.key?(key)
       end
+
       params.delete_if { |key| BLACK_LIST_COLUMN.find_index(key) }
     end
 
