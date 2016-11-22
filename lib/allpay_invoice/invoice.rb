@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'net/http'
 require 'json'
 require 'cgi'
@@ -9,8 +10,12 @@ module AllpayInvoice
   class Invoice
     PRE_ENCODE_COLUMN = [:CustomerName, :CustomerAddr , :CustomerEmail, :ItemName, :ItemWord, :InvoiceRemark, :InvCreateDate, :NotifyMail, :Reason, :IIS_Customer_Name, :IIS_Customer_Addr]
     BLACK_LIST_COLUMN = ['ItemName', 'ItemWord', 'InvoiceRemark', 'ItemRemark', 'Reason']
-    PRODUCTION_API_HOST = 'https://einvoice.allpay.com.tw'.freeze
-    TEST_API_HOST = 'https://einvoice-stage.allpay.com.tw'.freeze
+
+    ALLPAY_PRODUCTION_API_HOST = 'https://einvoice.allpay.com.tw'.freeze
+    ALLPAY_TEST_API_HOST = 'https://einvoice-stage.allpay.com.tw'.freeze
+    ECPAY_PRODUCTION_API_HOST = 'https://einvoice.ecpay.com.tw'.freeze
+    ECPAY_TEST_API_HOST = 'https://einvoice-stage.ecpay.com.tw'.freeze
+
     TEST_OPTIONS = {
       merchant_id: '2000132',
       hash_key: 'ejCk326UnaZWKisg',
@@ -33,9 +38,10 @@ module AllpayInvoice
     end
 
     def api_host
-      case @options[:mode]
-      when :production then PRODUCTION_API_HOST
-      when :test then TEST_API_HOST
+      if @options[:mode] == :production
+        @options[:server] == :allpay ? ALLPAY_PRODUCTION_API_HOST : ECPAY_PRODUCTION_API_HOST
+      else
+        @options[:server] == :allpay ? ALLPAY_TEST_API_HOST : ECPAY_TEST_API_HOST
       end
     end
 
