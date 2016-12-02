@@ -9,7 +9,7 @@ require 'allpay_invoice/core_ext/hash'
 module AllpayInvoice
   class Invoice
     PRE_ENCODE_COLUMN = [:CustomerName, :CustomerAddr , :CustomerEmail, :ItemName, :ItemWord, :InvoiceRemark, :InvCreateDate, :NotifyMail, :Reason, :IIS_Customer_Name, :IIS_Customer_Addr]
-    BLACK_LIST_COLUMN = ['ItemName', 'ItemWord', 'InvoiceRemark', 'ItemRemark', 'Reason']
+    BLACK_LIST_COLUMN = [:ItemName, :ItemWord, :InvoiceRemark, :ItemRemark, :Reason]
 
     ALLPAY_PRODUCTION_API_HOST = 'https://einvoice.allpay.com.tw'.freeze
     ALLPAY_TEST_API_HOST = 'https://einvoice-stage.allpay.com.tw'.freeze
@@ -177,7 +177,7 @@ module AllpayInvoice
         params[key] = url_encode(params[key]) if params.key?(key)
       end
 
-      params.delete_if { |key| BLACK_LIST_COLUMN.find_index(key) }
+      params.delete_if { |key| BLACK_LIST_COLUMN.find_index(key) || BLACK_LIST_COLUMN.find_index(key.to_sym) }
     end
 
     def option_required!(*option_names)
