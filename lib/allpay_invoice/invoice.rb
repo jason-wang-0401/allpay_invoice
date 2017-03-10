@@ -67,9 +67,6 @@ module AllpayInvoice
     def verify_mac(params = {})
       stringified_keys = params.stringify_keys
       check_mac_value = stringified_keys.delete('CheckMacValue')
-      p "傳來的params #{stringified_keys}"
-      p "傳來的mac #{check_mac_value}"
-      p "驗證的mac(MD5) #{make_mac(stringified_keys)}"
       make_mac(stringified_keys) == check_mac_value
     end
 
