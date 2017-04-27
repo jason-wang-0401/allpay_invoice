@@ -8,8 +8,8 @@ require 'allpay_invoice/core_ext/hash'
 
 module AllpayInvoice
   class Invoice
-    PRE_ENCODE_COLUMN = [:CustomerName, :CustomerAddr , :CustomerEmail, :ItemName, :ItemWord, :InvoiceRemark, :InvCreateDate, :NotifyMail, :Reason, :IIS_Customer_Name, :IIS_Customer_Addr]
-    BLACK_LIST_COLUMN = [:ItemName, :ItemWord, :InvoiceRemark, :ItemRemark, :Reason]
+    PRE_ENCODE_COLUMN = [:CustomerName, :CustomerAddr, :CustomerEmail, :ItemName, :ItemWord, :InvoiceRemark, :InvCreateDate, :NotifyMail, :Reason, :IIS_Customer_Name, :IIS_Customer_Addr]
+    BLACK_LIST_COLUMN = [:ItemName, :ItemWord, :InvoiceRemark, :ItemRemark, :Reason, :PosBarCode, :QRCode_Left, :QRCode_Right]
 
     ALLPAY_PRODUCTION_API_HOST = 'https://einvoice.allpay.com.tw'.freeze
     ALLPAY_TEST_API_HOST = 'https://einvoice-stage.allpay.com.tw'.freeze
@@ -125,10 +125,10 @@ module AllpayInvoice
 
     # 查詢發票API
     # url_encode => IIS_Customer_Name / IIS_Customer_Addr / ItemName / ItemWord / InvoiceRemark
-    # 在產生 CheckMacValue 時,須將 ItemName、ItemWord 及 InvoiceRemark 等欄位排除
+    # 在產生 CheckMacValue 時, 須將 ItemName、ItemWord 及 InvoiceRemark 等欄位排除
     def query_issue(overwrite_params = {})
       res = request '/Query/Issue', generate_params(overwrite_params)
-      Hash[res.body.split('&').map! { |i| i.split('=') }]
+      Hash[res.body.split('&').map! { |i| i.split('=', 2) }]
     end
 
     # 查詢作廢發票API
@@ -164,7 +164,8 @@ module AllpayInvoice
     # 付款完成觸發或延遲開立發票API
     def trigger_issue(overwrite_params = {})
       res = request '/Invoice/TriggerIssue', generate_params(overwrite_params)
-      Hash[res.body.split('&').map! { |i| i.split('=') }]
+      p res.body
+      Hash[res.body.split('&').map! { |i| i.split('=', 2) }]
     end
 
     private
